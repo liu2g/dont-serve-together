@@ -3,8 +3,7 @@
 A desktop GUI for managing **Don't Starve Together** dedicated-server clusters:
 their `cluster.ini` / `server.ini` settings, mods, and player lists.
 
-Built with [customtkinter](https://customtkinter.tomschimansky.com/) for the UI
-and [Pydantic](https://docs.pydantic.dev/) for typed, validated config models.
+Built with [Pydantic](https://docs.pydantic.dev/) for typed, validated config models.
 
 ## Requirements
 
