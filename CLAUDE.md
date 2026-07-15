@@ -111,3 +111,98 @@ Test vectors moved from real data, mirroring the use case:
   `Cluster_2`'s mods.
 - `Cluster_3` — a cluster that has actually been played (saves, logs,
   sessions); useful for verifying the tool leaves runtime data alone.
+
+## Cluster file layout and contents
+
+Facts observed in the sample clusters; no data-model design implied yet.
+
+### Cluster layout
+
+```
+Cluster_X/                      # directory name is just a label
+├── cluster.ini                 # cluster-wide settings
+├── cluster_token.txt           # optional; required to host a dedicated server
+├── adminlist.txt               # optional
+├── blocklist.txt               # optional
+├── <ShardA>/                   # one subdirectory per shard; name is a label
+│   ├── server.ini              # shard wiring: master/slave role, ports
+│   ├── leveldataoverride.lua   # world type + world-gen settings
+│   ├── modoverrides.lua        # mod list + per-mod config
+│   ├── save/                   # runtime, played clusters only — out of scope
+│   ├── backup/                 # runtime — out of scope
+│   ├── server_log.txt          # runtime — out of scope
+│   └── server_chat_log.txt     # runtime — out of scope
+└── <ShardB>/
+    └── ...
+```
+
+- Folder names are arbitrary labels: in `Cluster_3`, the `Master` folder holds
+  a Shipwrecked world and `Caves` a Volcano world. What a shard *is* comes
+  only from its files.
+- Only the template-derived `Cluster_IslandStart` has the optional root files;
+  the game-UI clusters (`Cluster_2`, `Cluster_3`) have none.
+- The runtime entries appear only in played clusters (`Cluster_3`), are
+  Klei-specific formats (e.g. `save/shardindex` starts with a `KLEI     1`
+  header), and are **outside the scope of this project** — the tool never
+  reads, writes, or manages them.
+
+### cluster.ini
+
+- Sections `[GAMEPLAY]`, `[NETWORK]`, `[MISC]`, `[SHARD]`; the template adds
+  `[STEAM]` and extra keys. Section and key sets vary per cluster — no fixed
+  schema. Game-generated files carry a `cluster_cloud_id`; the template does
+  not.
+- Any parsing must tolerate trailing whitespace (the template's `[SHARD]`
+  block has trailing tabs) and empty values (`cluster_password = `).
+
+### server.ini
+
+- Sections: `[NETWORK]` (`server_port`), `[SHARD]`, `[ACCOUNT]`
+  (`encode_user_path`), and usually `[STEAM]` (`master_server_port`,
+  `authentication_port`). Section order varies between files.
+- The master shard has only `is_master = true`; non-master shards have
+  `is_master = false`, `name`, and `id`. Game-generated slave ids are large
+  random numbers; the template's are small hand-picked ones (`2`, `3`, `4`).
+- Each shard has a distinct `server_port` (and distinct `[STEAM]` ports)
+  within the cluster.
+
+### Lua files (leveldataoverride.lua, modoverrides.lua)
+
+- Both are a single `return { ... }` expression in Klei's table-serializer
+  style: 2-space indent, keys sorted lexicographically, string keys that need
+  quoting written as `["..."]=` (including non-ASCII keys like
+  `["世界设置"]` and the empty-string key `[""]`), a trailing space before
+  closing braces, empty tables as `{  }`. Values are strings, booleans,
+  numbers, and nested tables/lists.
+
+#### leveldataoverride.lua
+
+- Top-level `id` / `location` identify the world type
+  (`SURVIVAL_TOGETHER`/`forest`, `DST_CAVE`/`cave`,
+  `SURVIVAL_SHIPWRECKED_CLASSIC`/`shipwrecked`,
+  `SURVIVAL_VOLCANO_CLASSIC`/`volcanoworld`), plus `name`, `desc`,
+  `version=4`, and a large `overrides={...}` table whose key set differs per
+  world type. Optional top-level fields vary per file (e.g.
+  `custom_settings_*` / `custom_worldgen_*` appear only in game-UI-created
+  files).
+
+#### modoverrides.lua
+
+- Shape: `return { ["workshop-<id>"] = { configuration_options = {...},
+  enabled = true }, ... }`. `configuration_options` may be empty.
+- Within one cluster the file is byte-identical across all shards (verified by
+  hash in all three samples).
+- Entry order is semantically irrelevant: `Cluster_IslandStart`'s merged file
+  is a literal concatenation (the two IA mods first, then the preset's entries
+  byte-for-byte), while the game re-sorts keys lexicographically whenever it
+  rewrites the file (`Cluster_2`, `Cluster_3`).
+
+### Encodings and line endings
+
+- All text files: UTF-8, no BOM.
+- INI files: CRLF line endings, with a trailing newline.
+- Lua files: LF-only line endings, **no** trailing newline.
+- `adminlist.txt` / `blocklist.txt`: CRLF between lines, no trailing newline.
+  Entries are Klei user ids (`KU_...`); `blocklist.txt` also shows a 17-digit
+  SteamID64 line — both formats occur.
+- `cluster_token.txt`: a single line, no newline at all.
