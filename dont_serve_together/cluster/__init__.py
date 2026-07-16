@@ -13,6 +13,7 @@ from dont_serve_together.cluster.luadata import (
     TopLevelEntry,
     parse_lua_table,
     parse_top_level_entries,
+    serialize_lua_table,
 )
 from dont_serve_together.cluster.model import (
     Cluster,
@@ -24,6 +25,12 @@ from dont_serve_together.cluster.model import (
     ModOverrides,
     ServerIni,
     Shard,
+)
+from dont_serve_together.cluster.operations import (
+    PickedFileError,
+    prepare_level_overwrite,
+    prepare_mod_merge,
+    write_config_text,
 )
 
 __all__ = [
@@ -38,11 +45,16 @@ __all__ = [
     "LuaTable",
     "ModEntry",
     "ModOverrides",
+    "PickedFileError",
     "ServerIni",
     "Shard",
     "TopLevelEntry",
     "load_cluster",
     "parse_lua_table",
     "parse_top_level_entries",
+    "prepare_level_overwrite",
+    "prepare_mod_merge",
     "read_ini",
+    "serialize_lua_table",
+    "write_config_text",
 ]
