@@ -16,6 +16,7 @@ dont_serve_together = "dont_serve_together.__main__:main"
 
 [dependency-groups]
 dev = [
+    "pyinstaller",
     "pyright",
     "pytest",
     "ruff",

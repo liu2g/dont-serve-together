@@ -5,8 +5,6 @@
 A program for managing **Don't Starve Together (DST)** dedicated-server
 clusters (config, mods, player lists). Python 3.14, managed with **uv**.
 
-Status: scaffolding only — not implemented yet.
-
 ## Commands
 
 ```bash
@@ -15,7 +13,11 @@ uv run dont_serve_together             # run the app
 uv run ruff check .                    # lint
 uv run pyright                         # type-check
 uv run pytest                          # tests
+uv run pyinstaller dont_serve_together.spec --noconfirm  # standalone executable into dist/
 ```
+
+The PyInstaller spec (`dont_serve_together.spec`) is cross-platform but
+cannot cross-compile — run the build on each target OS.
 
 ## Coding conventions
 
