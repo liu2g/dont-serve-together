@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from enum import Enum, auto
 from pathlib import Path
 from typing import ClassVar
 
@@ -28,12 +29,22 @@ from dont_serve_together.cluster import (
 from dont_serve_together.ui import pickers
 
 
-class FileDiffScreen(Screen[Cluster | None]):
-    """Diff preview for one operation; dismisses with the reloaded cluster on Apply.
+class DiffMode(Enum):
+    """A kind of change the File Diff screen can preview and apply."""
 
-    With a ``shard``, the screen overwrites that shard's
-    ``leveldataoverride.lua``; without one, it merges a picked mod list into
-    the cluster-wide ``modoverrides.lua``.
+    OVERWRITE_LEVEL = auto()
+    """Replace one shard's ``leveldataoverride.lua`` with a picked file."""
+
+    APPEND_MODS = auto()
+    """Merge a picked mod list into the cluster-wide ``modoverrides.lua``."""
+
+
+class FileDiffScreen(Screen[Cluster | None]):
+    """Diff preview for one mode; dismisses with the reloaded cluster on Apply.
+
+    Everything mode-specific (title, source file, write targets, preview
+    builder) is resolved by matching on the :class:`DiffMode` -- adding a new
+    mode means adding an enum member and extending those matches.
     """
 
     BINDINGS: ClassVar[list[BindingType]] = [Binding("escape", "cancel", "Cancel")]
@@ -78,30 +89,55 @@ class FileDiffScreen(Screen[Cluster | None]):
     }
     """
 
-    def __init__(self, cluster: Cluster, shard: Shard | None = None) -> None:
-        """Initialize the screen for one operation.
+    def __init__(self, cluster: Cluster, mode: DiffMode, shard: Shard | None = None) -> None:
+        """Initialize the screen for one mode.
 
         Args:
             cluster: The loaded cluster being managed.
-            shard: The shard whose level settings are overwritten, or ``None``
-                for the cluster-wide mod-list merge.
+            mode: The kind of change to preview and apply.
+            shard: The shard the mode targets; required by
+                ``OVERWRITE_LEVEL``, forbidden for cluster-wide modes.
+
+        Raises:
+            ValueError: If ``shard`` does not match what ``mode`` needs.
         """
         super().__init__()
         self._cluster = cluster
-        self._shard = shard
-        if shard is not None:
-            self._original_path = shard.level_data.path
-            self._original_text = shard.level_data.raw_text
-        else:
-            self._original_path = cluster.shards[0].mod_overrides.path
-            self._original_text = cluster.shards[0].mod_overrides.raw_text
+        self._mode = mode
+        match mode:
+            case DiffMode.OVERWRITE_LEVEL:
+                if shard is None:
+                    raise ValueError("OVERWRITE_LEVEL requires a shard")
+                self._title_text = f"Overwriting level settings for shard: {shard.name}"
+                source = shard.level_data
+                self._write_paths = [source.path]
+            case DiffMode.APPEND_MODS:
+                if shard is not None:
+                    raise ValueError("APPEND_MODS applies cluster-wide and does not take a shard")
+                self._title_text = "Appending mod list for cluster"
+                source = cluster.shards[0].mod_overrides
+                self._write_paths = [each.mod_overrides.path for each in cluster.shards]
+        self._original_path = source.path
+        self._original_text = source.raw_text
         self._new_text: str | None = None
 
-    @property
-    def _title_text(self) -> str:
-        if self._shard is not None:
-            return f"Overwriting level settings for shard: {self._shard.name}"
-        return "Appending mod list for cluster"
+    def _build_preview(self, picked: Path) -> str:
+        """Build the right-panel text for a picked file.
+
+        Args:
+            picked: The user-picked file.
+
+        Returns:
+            The text that Apply would write.
+
+        Raises:
+            PickedFileError: If the picked file is not valid for the mode.
+        """
+        match self._mode:
+            case DiffMode.OVERWRITE_LEVEL:
+                return prepare_level_overwrite(picked)
+            case DiffMode.APPEND_MODS:
+                return prepare_mod_merge(self._original_text, picked)
 
     @property
     def _target_name(self) -> str:
@@ -157,10 +193,7 @@ class FileDiffScreen(Screen[Cluster | None]):
             return
         error = self.query_one("#pick-error", Static)
         try:
-            if self._shard is not None:
-                new_text = prepare_level_overwrite(picked)
-            else:
-                new_text = prepare_mod_merge(self._original_text, picked)
+            new_text = self._build_preview(picked)
         except PickedFileError as exc:
             error.update(Text(str(exc)))
             return
@@ -177,11 +210,8 @@ class FileDiffScreen(Screen[Cluster | None]):
             return
         error = self.query_one("#pick-error", Static)
         try:
-            if self._shard is not None:
-                write_config_text(self._shard.level_data.path, self._new_text)
-            else:
-                for shard in self._cluster.shards:
-                    write_config_text(shard.mod_overrides.path, self._new_text)
+            for path in self._write_paths:
+                write_config_text(path, self._new_text)
             reloaded = load_cluster(self._cluster.path)
         except (OSError, ClusterLoadError) as exc:
             error.update(Text(f"Apply failed: {exc}"))

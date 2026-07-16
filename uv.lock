@@ -58,7 +58,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "pyinstaller", specifier = ">=6.21.0" },
+    { name = "pyinstaller" },
     { name = "pyright" },
     { name = "pytest" },
     { name = "ruff" },

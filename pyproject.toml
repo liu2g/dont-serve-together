@@ -12,7 +12,7 @@ dependencies = [
 ]
 
 [project.scripts]
-dont_serve_together = "dont_serve_together.__main__:main"
+dont-serve-together = "dont_serve_together.__main__:main"
 
 [dependency-groups]
 dev = [

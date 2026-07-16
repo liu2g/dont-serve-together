@@ -14,7 +14,7 @@ from textual.widgets import Footer, OptionList, Static
 from textual.widgets.option_list import Option
 
 from dont_serve_together.cluster import Cluster, Shard
-from dont_serve_together.ui.file_diff import FileDiffScreen
+from dont_serve_together.ui.file_diff import DiffMode, FileDiffScreen
 
 
 def _warnings(cluster: Cluster) -> list[str]:
@@ -105,7 +105,9 @@ class ClusterViewScreen(Screen[None]):
             case "level":
                 self.app.push_screen(ShardSelectScreen(self._cluster), callback=self._shard_chosen)
             case "mods":
-                self.app.push_screen(FileDiffScreen(self._cluster), callback=self._diff_closed)
+                self.app.push_screen(
+                    FileDiffScreen(self._cluster, DiffMode.APPEND_MODS), callback=self._diff_closed
+                )
             case "open":
                 self.app.pop_screen()
             case "quit":
@@ -113,7 +115,10 @@ class ClusterViewScreen(Screen[None]):
 
     def _shard_chosen(self, shard: Shard | None) -> None:
         if shard is not None:
-            self.app.push_screen(FileDiffScreen(self._cluster, shard=shard), callback=self._diff_closed)
+            self.app.push_screen(
+                FileDiffScreen(self._cluster, DiffMode.OVERWRITE_LEVEL, shard=shard),
+                callback=self._diff_closed,
+            )
 
     def _diff_closed(self, cluster: Cluster | None) -> None:
         if cluster is not None:
