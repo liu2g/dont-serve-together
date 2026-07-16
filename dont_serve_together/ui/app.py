@@ -16,6 +16,19 @@ class DontServeTogetherApp(App[None]):
     TITLE = "Don't Serve Together"
     BINDINGS: ClassVar[list[BindingType]] = [Binding("ctrl+q", "quit", "Quit", priority=True)]
 
+    # Flatten the default raised-button bevel (whose lightened top edge reads
+    # as a white bar on primary buttons) and keep focus indication as bold
+    # text instead of reverse video.
+    CSS = """
+    Button.-primary {
+        border-top: tall $primary;
+        border-bottom: tall $primary;
+    }
+    Button:focus {
+        text-style: bold;
+    }
+    """
+
     def get_default_screen(self) -> WelcomeScreen:
         """Return the Welcome screen as the base of the screen stack."""
         return WelcomeScreen()
