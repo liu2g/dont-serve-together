@@ -145,3 +145,29 @@ def test_shard_missing_config_file(tmp_path):
 def test_not_a_directory(tmp_path):
     with pytest.raises(ClusterLoadError, match="not a directory"):
         load_cluster(tmp_path / "does_not_exist")
+
+
+def _write_shard(cluster_dir: Path, name: str, mod_text: str) -> None:
+    shard = cluster_dir / name
+    shard.mkdir()
+    (shard / "server.ini").write_text("[SHARD]\nis_master = true\n", encoding="utf-8")
+    (shard / "leveldataoverride.lua").write_text(
+        'return { id="SURVIVAL_TOGETHER", location="forest" }', encoding="utf-8"
+    )
+    (shard / "modoverrides.lua").write_text(mod_text, encoding="utf-8")
+
+
+def test_mismatched_modoverrides_rejected(tmp_path):
+    (tmp_path / "cluster.ini").write_text("[GAMEPLAY]\n", encoding="utf-8")
+    _write_shard(tmp_path, "Master", 'return { ["workshop-1"]={ enabled=true } }')
+    _write_shard(tmp_path, "Caves", 'return { ["workshop-2"]={ enabled=true } }')
+    with pytest.raises(ClusterLoadError, match="not byte-identical across shards"):
+        load_cluster(tmp_path)
+
+
+def test_identical_modoverrides_accepted(tmp_path):
+    (tmp_path / "cluster.ini").write_text("[GAMEPLAY]\n", encoding="utf-8")
+    mod_text = 'return { ["workshop-1"]={ enabled=true } }'
+    _write_shard(tmp_path, "Master", mod_text)
+    _write_shard(tmp_path, "Caves", mod_text)
+    assert len(load_cluster(tmp_path).shards) == 2

@@ -46,7 +46,8 @@ def load_cluster(path: Path) -> Cluster:
 
     Raises:
         ClusterLoadError: If ``path`` is not a cluster directory, a required
-            file is missing or unreadable, or a config file fails to parse.
+            file is missing or unreadable, a config file fails to parse, or
+            ``modoverrides.lua`` is not byte-identical across shards.
     """
     root = Path(path).resolve()
     if not root.is_dir():
@@ -67,15 +68,34 @@ def load_cluster(path: Path) -> Cluster:
     if not shard_dirs:
         raise ClusterLoadError(f"no shard directories (subdirectories with {_SERVER_INI}) in {root}")
 
+    shards = [_load_shard(shard_dir) for shard_dir in shard_dirs]
+    _check_mod_overrides_identical(shards)
+
     return Cluster(
         path=root,
         name=root.name,
         cluster_ini=cluster_ini,
-        shards=[_load_shard(shard_dir) for shard_dir in shard_dirs],
+        shards=shards,
         cluster_token=_optional_file(root / "cluster_token.txt"),
         adminlist=_optional_file(root / "adminlist.txt"),
         blocklist=_optional_file(root / "blocklist.txt"),
     )
+
+
+def _check_mod_overrides_identical(shards: list[Shard]) -> None:
+    """Raise unless ``modoverrides.lua`` is byte-identical across all shards.
+
+    Identical bytes are what make the per-shard copies "one file" for the
+    whole cluster; this is the only byte-level comparison in the tool.
+    """
+    reference = shards[0]
+    differing = [
+        shard.name for shard in shards[1:] if shard.mod_overrides.raw_text != reference.mod_overrides.raw_text
+    ]
+    if differing:
+        raise ClusterLoadError(
+            f"{_MOD_OVERRIDES} is not byte-identical across shards ({reference.name} vs {', '.join(differing)})"
+        )
 
 
 def _load_shard(path: Path) -> Shard:
