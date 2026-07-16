@@ -6,8 +6,9 @@ This document describes the preliminary design of the program's user interface u
 
 - Always use forward slashes (`/`) in file paths, even on Windows.
 - All file pickers start browsing at a location stored as a session-global variable:
-  - Its initial value is this repo's location, to be switched to the actual game location before a release
-    rolls out. If that location does not exist, fall back to the user's home directory.
+  - Its initial value is the game data directory: `~/Documents/Klei/DoNotStarveTogether/` on
+    Windows/macOS, `~/.klei/DoNotStarveTogether/` on Linux. If that location does not exist, fall back
+    to the user's home directory.
   - After every successful pick, the global updates to the picked file's directory, so subsequent pickers
     resume there. The value is not persisted across program runs.
 - Byte-level comparison happens in exactly one place: the cross-shard `modoverrides.lua` identity check
@@ -17,8 +18,9 @@ This document describes the preliminary design of the program's user interface u
 ## Welcome Screen
 
 First screen to display at launch.
-Show the program name, the version (read from package metadata, not hardcoded), and a "Browse" button to
-select a cluster folder. There is no text box; selection happens exclusively through the picker.
+Show the program name, the version (read from package metadata, not hardcoded), and a "Browse cluster
+folder" button. There is no text box; selection happens exclusively through the picker. Every Browse
+button is labeled with what it picks.
 
 When a cluster folder is selected, the program loads and validates it.
 If invalid, an inline error message describing the problem is shown, and the user can browse again.
@@ -64,7 +66,8 @@ At the very top of the screen, show a title "Overwriting level settings for shar
 
 Show a diff view of the selected file (`leveldataoverride.lua` for a shard or `modoverrides.lua`).
 At the top of the diff view, show a read-only text box (displaying the user-picked file path) and a
-"Browse" button next to it.
+Browse button next to it, labeled with the target file name ("Browse leveldataoverride.lua" /
+"Browse modoverrides.lua").
 At the bottom of the diff view, show an "Apply Changes" button and a "Cancel" button.
 At start, both left and right sides of the diff view show the original file content, and "Apply Changes"
 is disabled; it becomes enabled once a valid file has been picked.
