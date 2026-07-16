@@ -1,11 +1,14 @@
-"""Parser for the Lua data-literal files used in DST cluster configuration.
+"""Parser and serializer for the Lua data-literal files used in DST cluster configuration.
 
 Files like ``modoverrides.lua`` and ``leveldataoverride.lua`` are a single
 ``return { ... }`` expression emitted by Klei's table serializer -- pure data,
 no executable code. This module parses exactly that data subset of Lua:
 tables, strings, numbers, booleans, and ``--`` line comments. Anything else
 (function calls, ``nil``, long strings, ...) is rejected with a
-:class:`LuaParseError`.
+:class:`LuaParseError`. It also serializes tables back to text in the same
+Klei style, so that parse -> serialize reproduces a game-written file
+byte-for-byte (``--`` comments are the one accepted loss: the parser skips
+them).
 """
 
 from __future__ import annotations
@@ -218,6 +221,88 @@ class _Parser:
         line = self._text.count("\n", 0, self._pos) + 1
         column = self._pos - self._text.rfind("\n", 0, self._pos)
         return LuaParseError(message, line, column)
+
+
+_LUA_KEYWORDS = frozenset({
+    "and", "break", "do", "else", "elseif", "end", "false", "for", "function", "goto", "if",
+    "in", "local", "nil", "not", "or", "repeat", "return", "then", "true", "until", "while",
+})
+
+_SERIALIZE_ESCAPES = {"\\": "\\\\", '"': '\\"', "\n": "\\n", "\r": "\\r", "\t": "\\t"}
+
+# A table whose inline rendering is at most this long stays on one line.
+# Empirically, any limit in 62..73 reproduces every game-written sample file
+# byte-for-byte; 70 is the round value in the middle.
+_INLINE_LIMIT = 70
+
+
+def serialize_lua_table(table: LuaTable) -> str:
+    """Serialize a table as a ``return { ... }`` document in Klei's style.
+
+    The output matches the game's own table serializer: 2-space indent,
+    ``key=value`` with no spaces around ``=``, ``["..."]=`` quoting for keys
+    that are not Lua identifiers, a trailing space before every closing brace,
+    empty tables as ``{  }``, short tables written inline on one line, LF line
+    endings, and no trailing newline. Keys are emitted in insertion order --
+    the serializer never re-sorts.
+
+    Args:
+        table: The top-level table.
+
+    Returns:
+        The full document text, starting with ``return``.
+    """
+    return f"return {_serialize_table(table, open_indent=0)}"
+
+
+def _serialize_string(value: str) -> str:
+    return '"' + "".join(_SERIALIZE_ESCAPES.get(char, char) for char in value) + '"'
+
+
+def _serialize_scalar(value: str | int | float | bool) -> str:
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, str):
+        return _serialize_string(value)
+    return str(value)
+
+
+def _serialize_key(key: str | int) -> str:
+    if isinstance(key, int):
+        return f"[{key}]="
+    if _IDENTIFIER_RE.fullmatch(key) and key not in _LUA_KEYWORDS:
+        return f"{key}="
+    return f"[{_serialize_string(key)}]="
+
+
+def _table_entries(table: LuaTable) -> list[tuple[str, LuaValue]]:
+    """Return (rendered key prefix, value) pairs; array items have an empty prefix."""
+    entries: list[tuple[str, LuaValue]] = [("", item) for item in table.items]
+    entries.extend((_serialize_key(key), value) for key, value in table.fields.items())
+    return entries
+
+
+def _serialize_inline(value: LuaValue) -> str:
+    if not isinstance(value, LuaTable):
+        return _serialize_scalar(value)
+    parts = [key + _serialize_inline(item) for key, item in _table_entries(value)]
+    return "{ " + ", ".join(parts) + " }"
+
+
+def _serialize_table(table: LuaTable, open_indent: int) -> str:
+    inline = _serialize_inline(table)
+    entries = _table_entries(table)
+    if not entries or len(inline) <= _INLINE_LIMIT:
+        return inline
+    pad = " " * (open_indent + 2)
+    lines = [pad + key + _serialize_value(value, open_indent + 2) for key, value in entries]
+    return "{\n" + ",\n".join(lines) + " \n" + " " * open_indent + "}"
+
+
+def _serialize_value(value: LuaValue, open_indent: int) -> str:
+    if isinstance(value, LuaTable):
+        return _serialize_table(value, open_indent)
+    return _serialize_scalar(value)
 
 
 def parse_lua_table(text: str) -> LuaTable:
