@@ -1,5 +1,6 @@
 """Tests for load_cluster against the three sample clusters."""
 
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import pytest
@@ -120,6 +121,15 @@ def test_raw_text_is_byte_faithful():
     assert master is not None
     assert "\r" not in master.mod_overrides.raw_text
     assert master.mod_overrides.raw_text.endswith("}")
+
+
+def test_loaded_at_is_aware_and_current():
+    before = datetime.now().astimezone()
+    cluster = load_cluster(EXAMPLES / "Cluster_2")
+    after = datetime.now().astimezone()
+    assert cluster.loaded_at.tzinfo is not None
+    assert before <= cluster.loaded_at <= after
+    assert after - before < timedelta(seconds=5)
 
 
 def test_missing_cluster_ini(tmp_path):

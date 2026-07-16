@@ -9,6 +9,7 @@ name. All models are frozen -- a loaded cluster is a read-only snapshot.
 
 from __future__ import annotations
 
+from datetime import datetime
 from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict
@@ -153,9 +154,10 @@ class Shard(BaseModel):
 class Cluster(BaseModel):
     """A cluster directory loaded into memory as a read-only snapshot.
 
-    Optional root files (``cluster_token``, ``adminlist``, ``blocklist``) are
-    recorded as paths only; their content is out of scope and they are copied
-    whole by the pipeline.
+    ``loaded_at`` is the timezone-aware moment the snapshot was read from
+    disk. Optional root files (``cluster_token``, ``adminlist``,
+    ``blocklist``) are recorded as paths only; their content is out of scope
+    and they are copied whole by the pipeline.
     """
 
     model_config = ConfigDict(frozen=True)
@@ -164,6 +166,7 @@ class Cluster(BaseModel):
     name: str
     cluster_ini: ClusterIni
     shards: list[Shard]
+    loaded_at: datetime
     cluster_token: Path | None = None
     adminlist: Path | None = None
     blocklist: Path | None = None

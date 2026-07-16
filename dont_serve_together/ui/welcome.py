@@ -85,4 +85,8 @@ class WelcomeScreen(Screen[None]):
             return
         error.update("")
         pickers.remember_pick(picked)
-        self.app.push_screen(ClusterViewScreen(cluster))
+        self.app.push_screen(ClusterViewScreen(cluster), callback=self._cluster_closed)
+
+    def _cluster_closed(self, error: str | None) -> None:
+        if error is not None:
+            self.query_one("#welcome-error", Static).update(Text(error))

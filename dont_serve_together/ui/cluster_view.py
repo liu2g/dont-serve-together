@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import ClassVar
 
 from rich.text import Text
@@ -13,7 +14,7 @@ from textual.screen import ModalScreen, Screen
 from textual.widgets import Footer, OptionList, Static
 from textual.widgets.option_list import Option
 
-from dont_serve_together.cluster import Cluster, Shard
+from dont_serve_together.cluster import Cluster, ClusterLoadError, Shard, load_cluster
 from dont_serve_together.ui.file_diff import DiffMode, FileDiffScreen
 
 
@@ -39,8 +40,18 @@ def _shard_label(shard: Shard) -> str:
     return f"{shard.name} ({location}{role})"
 
 
-class ClusterViewScreen(Screen[None]):
-    """Cluster info in a rounded box, then the action menu."""
+def _local_timestamp(moment: datetime) -> str:
+    """Format a moment in the user's timezone: locale date, 24-hour time, milliseconds."""
+    local = moment.astimezone()
+    return f"{local.strftime('%x')} {local:%H:%M:%S}.{local.microsecond // 1000:03d}"
+
+
+class ClusterViewScreen(Screen[str | None]):
+    """Cluster info in a rounded box, then the action menu.
+
+    Dismisses with ``None`` on a normal exit, or with an error message when
+    the cluster fails to reload and the user is kicked back to Welcome.
+    """
 
     BINDINGS: ClassVar[list[BindingType]] = [Binding("escape", "back", "Back")]
 
@@ -78,6 +89,7 @@ class ClusterViewScreen(Screen[None]):
         yield OptionList(
             Option("Overwrite level settings", id="level"),
             Option("Append mod list", id="mods"),
+            Option("Reload cluster", id="reload"),
             Option("Open another cluster", id="open"),
             Option("Quit", id="quit"),
             id="menu",
@@ -95,6 +107,7 @@ class ClusterViewScreen(Screen[None]):
         text.append(f"\n{cluster.path.as_posix()}", style="dim")
         text.append(f"\nShards ({len(cluster.shards)}): {shard_labels}")
         text.append(f"\nEnabled mods: {enabled_mods}")
+        text.append(f"\nLast loaded: {_local_timestamp(cluster.loaded_at)}")
         for warning in _warnings(cluster):
             text.append(f"\n⚠ {warning}", style="yellow")
         return text
@@ -108,8 +121,10 @@ class ClusterViewScreen(Screen[None]):
                 self.app.push_screen(
                     FileDiffScreen(self._cluster, DiffMode.APPEND_MODS), callback=self._diff_closed
                 )
+            case "reload":
+                self._reload()
             case "open":
-                self.app.pop_screen()
+                self.dismiss(None)
             case "quit":
                 self.app.exit()
 
@@ -125,9 +140,18 @@ class ClusterViewScreen(Screen[None]):
             self._cluster = cluster
             self.refresh(recompose=True)
 
+    def _reload(self) -> None:
+        """Reload the cluster from disk; kick back to Welcome if it fails."""
+        try:
+            self._cluster = load_cluster(self._cluster.path)
+        except ClusterLoadError as exc:
+            self.dismiss(f"Reload failed: {exc}")
+            return
+        self.refresh(recompose=True)
+
     def action_back(self) -> None:
         """Go back to the Welcome screen."""
-        self.app.pop_screen()
+        self.dismiss(None)
 
 
 class ShardSelectScreen(ModalScreen[Shard | None]):

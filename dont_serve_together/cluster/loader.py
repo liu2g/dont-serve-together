@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from pathlib import Path
 
 from dont_serve_together.cluster.inidata import IniParseError, read_ini
@@ -76,6 +77,7 @@ def load_cluster(path: Path) -> Cluster:
         name=root.name,
         cluster_ini=cluster_ini,
         shards=shards,
+        loaded_at=datetime.now().astimezone(),
         cluster_token=_optional_file(root / "cluster_token.txt"),
         adminlist=_optional_file(root / "adminlist.txt"),
         blocklist=_optional_file(root / "blocklist.txt"),
