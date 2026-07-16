@@ -1,3 +1,5 @@
-"""Don't Serve Together: a GUI manager for Don't Starve Together dedicated servers."""
+"""Don't Serve Together: a manager for Don't Starve Together dedicated servers."""
 
-__version__ = "0.1.0"
+from importlib.metadata import version
+
+__version__ = version("dont-serve-together")

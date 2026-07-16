@@ -6,7 +6,9 @@ readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
     "pydantic>=2.13.4",
-    "pyside6>=6.11.1",
+    "textual>=8.2.8",
+    "textual-diff-view>=0.1.5",
+    "textual-fspicker>=1.0.1",
 ]
 
 [project.scripts]

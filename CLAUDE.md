@@ -2,7 +2,7 @@
 
 ## What this project is
 
-A **PySide6 (Qt 6)** desktop GUI for managing **Don't Starve Together (DST)** dedicated-server
+A program for managing **Don't Starve Together (DST)** dedicated-server
 clusters (config, mods, player lists). Python 3.14, managed with **uv**.
 
 Status: scaffolding only — not implemented yet.
@@ -41,42 +41,6 @@ A cluster ties one or more shards together.
 
 From the server's perspective, a shard is run as an individual process, connected by configured ports to the other shards in the cluster.
 From the player's perspective, a cluster is a single game server instance, and the shards are the different levels of the world that can be accessed by traveling between them.
-
-## Primary use case: assembling a 4-shard cluster
-
-The game's own server-creation UI only supports two shards: **Master** (the
-overworld, "the Constant") and **Caves**. The user hosts a 4-shard cluster that
-adds **Island** and **Volcano** shards, enabled by the **Island Adventure** mod
-(IA, also called Shipwrecked). Such a cluster can only be assembled at file
-level, which this tool automates.
-
-Inputs:
-
-- **Template**: a 4-shard cluster provided by the IA mod author. Correct shard
-  wiring (`cluster.ini`, `server.ini`), but default level settings and no mods
-  besides the IA mods.
-- **Preset**: a throwaway 2-shard (Master + Caves) cluster the user creates in
-  the game UI, applies their custom level settings and mods to, and exits
-  immediately. It carries the user's customizations but knows nothing about IA.
-
-Pipeline (what the tool automates):
-
-1. Copy the template to a WIP area.
-2. Overwrite the WIP `Master/leveldataoverride.lua` and
-   `Caves/leveldataoverride.lua` with the preset's, as whole-file copies.
-   Island and Volcano keep the template's level settings.
-3. Merge mods: take the template's `modoverrides.lua` (IA mods) and append the
-   preset's mod entries. This is the one operation that requires entry-level
-   editing inside a file. The same merged file is written to **all four**
-   shards. If the same mod appears on both sides, the GUI warns and lets the
-   user decide per mod.
-4. Everything else is left as the template has it — `cluster.ini` (nothing
-   carries over from the preset), `server.ini`, network/port settings, and
-   admin files (`adminlist.txt`, `blocklist.txt`, `cluster_token.txt`).
-5. The WIP cluster is now finalized and ready to serve.
-
-Template, preset, and output locations are **user-configurable paths** — do not
-hard-code the Klei data-directory layout.
 
 ## Scope
 
