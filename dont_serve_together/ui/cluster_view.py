@@ -15,10 +15,18 @@ from textual.widgets import Footer, OptionList, Static
 from textual.widgets.option_list import Option
 
 from dont_serve_together.cluster import Cluster, ClusterLoadError, Shard, load_cluster
+from dont_serve_together.mods_setup import (
+    MODS_SETUP_NAME,
+    ModsSetupCheck,
+    ModsSetupError,
+    ModsSetupStatus,
+    append_missing_mods,
+    check_mods_setup,
+)
 from dont_serve_together.ui.file_diff import DiffMode, FileDiffScreen
 
 
-def _warnings(cluster: Cluster) -> list[str]:
+def _warnings(cluster: Cluster, mods_check: ModsSetupCheck) -> list[str]:
     """Collect the display-only warnings for the Cluster Info box."""
     warnings: list[str] = []
     if cluster.cluster_token is None:
@@ -30,7 +38,25 @@ def _warnings(cluster: Cluster) -> list[str]:
         warnings.append("No shard declares is_master = true -- the cluster cannot run as-is.")
     elif len(masters) > 1:
         warnings.append(f"Multiple master shards ({', '.join(masters)}) -- the cluster cannot run as-is.")
+    warnings.extend(_mods_setup_warnings(mods_check))
     return warnings
+
+
+def _mods_setup_warnings(check: ModsSetupCheck) -> list[str]:
+    """Return the warning for one mods-setup check result, if any."""
+    match check.status:
+        case ModsSetupStatus.FILE_MISSING:
+            return [
+                f'Could not find {MODS_SETUP_NAME}. Use "Set Game Directory" to select the game directory '
+                "that contains the file, and reload the cluster."
+            ]
+        case ModsSetupStatus.UNREADABLE:
+            return [f"Could not read {MODS_SETUP_NAME}: {check.error}"]
+        case ModsSetupStatus.OK if count := len(check.missing_ids):
+            verb = "mods are" if count > 1 else "mod is"
+            return [f"{count} enabled {verb} not in {MODS_SETUP_NAME}."]
+        case _:
+            return []
 
 
 def _shard_label(shard: Shard) -> str:
@@ -79,21 +105,30 @@ class ClusterViewScreen(Screen[str | None]):
             cluster: The cluster snapshot to display.
         """
         super().__init__()
+        self._set_cluster(cluster)
+
+    def _set_cluster(self, cluster: Cluster) -> None:
+        """Adopt a freshly loaded cluster snapshot and re-run the mods-setup check."""
         self._cluster = cluster
+        self._mods_check = check_mods_setup(cluster)
 
     def compose(self) -> ComposeResult:
         """Compose the Cluster Info box and the action menu."""
         info = Static(self._info_text(), id="cluster-info")
         info.border_title = "Cluster Info"
         yield info
-        yield OptionList(
+        options = [
             Option("Overwrite level settings", id="level"),
             Option("Append mod list", id="mods"),
+        ]
+        if self._mods_check.offers_populate:
+            options.append(Option(f"Populate missing mods to {MODS_SETUP_NAME}", id="populate"))
+        options += [
             Option("Reload cluster", id="reload"),
             Option("Open another cluster", id="open"),
             Option("Quit", id="quit"),
-            id="menu",
-        )
+        ]
+        yield OptionList(*options, id="menu")
         yield Footer()
 
     def _info_text(self) -> Text:
@@ -108,7 +143,7 @@ class ClusterViewScreen(Screen[str | None]):
         text.append(f"\nShards ({len(cluster.shards)}): {shard_labels}")
         text.append(f"\nEnabled mods: {enabled_mods}")
         text.append(f"\nLast loaded: {_local_timestamp(cluster.loaded_at)}")
-        for warning in _warnings(cluster):
+        for warning in _warnings(cluster, self._mods_check):
             text.append(f"\n⚠ {warning}", style="yellow")
         return text
 
@@ -121,6 +156,8 @@ class ClusterViewScreen(Screen[str | None]):
                 self.app.push_screen(
                     FileDiffScreen(self._cluster, DiffMode.APPEND_MODS), callback=self._diff_closed
                 )
+            case "populate":
+                self._populate_mods()
             case "reload":
                 self._reload()
             case "open":
@@ -137,16 +174,28 @@ class ClusterViewScreen(Screen[str | None]):
 
     def _diff_closed(self, cluster: Cluster | None) -> None:
         if cluster is not None:
-            self._cluster = cluster
+            self._set_cluster(cluster)
             self.refresh(recompose=True)
+
+    def _populate_mods(self) -> None:
+        """Append the cluster's missing mods to the setup file, then reload."""
+        try:
+            count = append_missing_mods(self._cluster)
+        except ModsSetupError as exc:
+            self.notify(str(exc), title="Populate failed", severity="error")
+            return
+        plural = "s" if count != 1 else ""
+        self.notify(f"Appended {count} mod{plural} to {MODS_SETUP_NAME}.")
+        self._reload()
 
     def _reload(self) -> None:
         """Reload the cluster from disk; kick back to Welcome if it fails."""
         try:
-            self._cluster = load_cluster(self._cluster.path)
+            cluster = load_cluster(self._cluster.path)
         except ClusterLoadError as exc:
             self.dismiss(f"Reload failed: {exc}")
             return
+        self._set_cluster(cluster)
         self.refresh(recompose=True)
 
     def action_back(self) -> None:
