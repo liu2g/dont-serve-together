@@ -148,7 +148,7 @@ class FileDiffScreen(Screen[Cluster | None]):
         yield Static(Text(self._title_text), id="diff-title")
         with Horizontal(id="pick-row"):
             yield Static("(no file selected)", id="picked-path")
-            yield Button(f"Browse {self._target_name}…", id="browse")
+            yield Button(f"Browse {self._target_name}", id="browse")
         yield Static("", id="pick-error")
         yield VerticalScroll(id="diff-scroll")
         with Horizontal(id="actions"):

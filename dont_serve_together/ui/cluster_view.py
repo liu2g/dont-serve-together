@@ -118,15 +118,15 @@ class ClusterViewScreen(Screen[str | None]):
         info.border_title = "Cluster Info"
         yield info
         options = [
-            Option("Overwrite level settings", id="level"),
-            Option("Append mod list", id="mods"),
+            Option("🌍 Overwrite level settings", id="level"),
+            Option("🧩 Append mod list", id="mods"),
         ]
         if self._mods_check.offers_populate:
-            options.append(Option(f"Populate missing mods to {MODS_SETUP_NAME}", id="populate"))
+            options.append(Option(f"📥 Populate missing mods to {MODS_SETUP_NAME}", id="populate"))
         options += [
-            Option("Reload cluster", id="reload"),
-            Option("Open another cluster", id="open"),
-            Option("Quit", id="quit"),
+            Option("🔄 Reload cluster", id="reload"),
+            Option("📂 Open another cluster", id="open"),
+            Option("🚪 Quit", id="quit"),
         ]
         yield OptionList(*options, id="menu")
         yield Footer()

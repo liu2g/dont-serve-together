@@ -17,6 +17,16 @@ from dont_serve_together.cluster import ClusterLoadError, load_cluster
 from dont_serve_together.ui import pickers
 from dont_serve_together.ui.cluster_view import ClusterViewScreen
 
+ASCII_ART = r"""
+   ____               o                                 ______                _               
+  (|   \              /        ()                      (_) |                 | |              
+   |    | __   _  _    _|_     /\  _   ,_         _        | __   __,  _ _|_ | |     _   ,_   
+  _|    |/  \_/ |/ |    |     /  \|/  /  |  |  |_|/      _ |/  \_/  | |/  |  |/ \   |/  /  |  
+ (/\___/ \__/   |  |_/  |_/  /(__/|__/   |_/ \/  |__/   (_/ \__/ \_/|/|__/|_/|   |_/|__/   |_/
+                                                                   /|                         
+                                                                   \|                         
+"""
+# Generated with https://patorjk.com/software/taag using the "Script" font
 
 def _app_version() -> str:
     try:
@@ -33,12 +43,11 @@ class WelcomeScreen(Screen[None]):
         align: center middle;
     }
     WelcomeScreen #welcome-box {
-        width: 72;
+        width: auto;
         height: auto;
     }
     WelcomeScreen #app-name {
-        width: 1fr;
-        text-align: center;
+        width: auto;
         text-style: bold;
     }
     WelcomeScreen #app-version {
@@ -60,10 +69,11 @@ class WelcomeScreen(Screen[None]):
     def compose(self) -> ComposeResult:
         """Compose the program name, version, Browse button, and error line."""
         with Vertical(id="welcome-box"):
-            yield Static("Don't Serve Together", id="app-name")
+            with Center():
+                yield Static(Text(ASCII_ART.strip("\n")), id="app-name")
             yield Static(f"version {_app_version()}", id="app-version")
             with Center():
-                yield Button("Browse cluster folder…", id="browse", variant="primary")
+                yield Button("Browse cluster folder", id="browse", variant="primary")
             yield Static("", id="welcome-error")
         yield Footer()
 
