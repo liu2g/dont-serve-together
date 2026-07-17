@@ -22,8 +22,14 @@ cd "$REPO_ROOT"
 #   the binary runs in the terminal that starts it; on Linux it has no effect.
 # - --icon: embedded on Windows only; other platforms ignore it (regenerate
 #   with scripts/png_to_ico.py when assets/logo.png changes).
+# - --version-file: embedded on Windows only (Properties -> Details); the
+#   resource is generated from pyproject.toml by scripts/gen_version_file.py
+#   into the gitignored build/ directory just below.
 # - --specpath: PyInstaller always generates a spec file; keep it out of the
 #   repo by writing it into the gitignored build/ directory.
+printf "${GREEN}==>${ENDCOLOR} Generating version resource from pyproject.toml\n"
+uv run scripts/gen_version_file.py
+
 printf "${GREEN}==>${ENDCOLOR} Building standalone executable with PyInstaller\n"
 uv run pyinstaller dont_serve_together/__main__.py \
     --name dont-serve-together \
@@ -31,6 +37,7 @@ uv run pyinstaller dont_serve_together/__main__.py \
     --console \
     --noupx \
     --icon "$REPO_ROOT/assets/logo.ico" \
+    --version-file "$REPO_ROOT/build/file_version_info.txt" \
     --collect-submodules textual \
     --collect-submodules textual_diff_view \
     --collect-submodules textual_fspicker \

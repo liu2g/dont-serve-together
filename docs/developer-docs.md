@@ -1,6 +1,6 @@
 # Developer Documentation
 
-This document explains how the program works to a developer new to the codebase: the UI flow, the behaviors behind each screen, and the handling of the game's `dedicated_server_mods_setup.lua`.
+This document explains how the program works to a developer new to the codebase: the development workflows (checks and executable builds), the UI flow, the behaviors behind each screen, and the handling of the game's `dedicated_server_mods_setup.lua`.
 For what the project *is* and the workflow it automates, start with the [README](../README.md);
 for how to contribute, see the [contributing guide](../CONTRIBUTING.md).
 The on-disk formats of the cluster files the tool reads and writes are specified in [cluster-formats.md](cluster-formats.md).
@@ -18,6 +18,24 @@ Run it before committing:
 ```
 
 With no flags it runs all three stages; the flags select individual stages, and `--all` is the explicit form of the default.
+
+## Building the standalone executable
+
+`scripts/build_exe.sh` builds a single-file executable with PyInstaller into `dist/` (`dont-serve-together.exe` on Windows, `dont-serve-together` on macOS/Linux):
+
+```bash
+./scripts/build_exe.sh
+```
+
+- All PyInstaller options live in the script, with a comment explaining each non-obvious flag; no spec file is checked in (PyInstaller writes the generated spec into the gitignored `build/` directory).
+- The script runs on every platform, but PyInstaller cannot cross-compile: run the build on each target OS to produce that platform's binary.
+- Two resources are embedded on Windows only; the other platforms ignore the corresponding options:
+  - The icon, `assets/logo.ico`.
+    Regenerate it with `scripts/png_to_ico.py` when `assets/logo.png` changes.
+  - The version resource (what Explorer shows under Properties → Details: name, version, description, author, copyright).
+    The build script generates it fresh on every build by running `scripts/gen_version_file.py`, which reads `pyproject.toml` (plus the `Copyright ...` line of `LICENSE`) and writes `build/file_version_info.txt` for PyInstaller's `--version-file` option.
+    `pyproject.toml` therefore stays the single source of truth; nothing here needs a manual update for a release.
+    One representational limit: Windows stores the file version as four integers, so a pre-release suffix (the `rc1` in `0.2.0rc1`) is dropped from the numeric version and appears only in the string fields.
 
 ## Code map
 
