@@ -17,7 +17,7 @@ def test_template_cluster_ini_with_trailing_tabs():
     # The template's [SHARD] block has trailing tabs on the header and key lines.
     assert sections["SHARD"]["shard_enabled"] == "true"
     assert sections["SHARD"]["master_port"] == "10887"
-    assert sections["STEAM"]["steam_group_id"] == "27915213"
+    assert sections["STEAM"]["steam_group_id"] == "12345678"
 
 
 def test_empty_values_kept_as_empty_strings():
@@ -32,7 +32,7 @@ def test_key_case_preserved():
 
 def test_non_ascii_values():
     sections = read_ini(read_exact(EXAMPLES / "Cluster_2" / "cluster.ini"))
-    assert sections["NETWORK"]["cluster_name"] == "2GLiu的世界"
+    assert sections["NETWORK"]["cluster_name"] == "Guest的世界"
 
 
 def test_all_sample_ini_files_readable():

@@ -84,7 +84,7 @@ def test_cluster_islandstart_merged_template():
     assert cluster.adminlist is not None
     assert cluster.blocklist is not None
 
-    assert cluster.cluster_ini.cluster_name == "H.Y.C.Y.BH"
+    assert cluster.cluster_ini.cluster_name == "Example Cluster"
 
 
 def test_cluster_3_played_cluster():
@@ -105,9 +105,9 @@ def test_cluster_3_played_cluster():
 
 
 def test_non_ascii_round_trip():
-    assert load_cluster(EXAMPLES / "Cluster_2").cluster_ini.cluster_name == "2GLiu的世界"
+    assert load_cluster(EXAMPLES / "Cluster_2").cluster_ini.cluster_name == "Guest的世界"
     cluster_3 = load_cluster(EXAMPLES / "Cluster_3")
-    assert cluster_3.cluster_ini.cluster_name == "2GLiu的世界1"
+    assert cluster_3.cluster_ini.cluster_name == "Guest的世界1"
     master = cluster_3.shard("Master")
     assert master is not None
     assert master.level_data.display_name == "海难"
