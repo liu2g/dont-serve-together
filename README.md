@@ -88,6 +88,12 @@ If your game is not installed in the default Steam location, open the command pa
 
 How the program works inside, the exact file-handling rules, and instructions for running from source live in the [developer documentation](docs/developer-docs.md).
 
+## Contributing
+
+Bug reports, feature requests, and pull requests are all welcome.
+If the tool misbehaves or a hosting workflow you need is missing, open an issue on the [issue tracker](https://github.com/liu2g/dont-serve-together/issues).
+The [contributing guide](CONTRIBUTING.md) explains what makes a bug report useful and how to set up a development environment.
+
 ## License
 
 [MIT](LICENSE).

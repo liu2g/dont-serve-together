@@ -1,7 +1,9 @@
 # Developer Documentation
 
 This document explains how the program works to a developer new to the codebase: the UI flow, the behaviors behind each screen, and the handling of the game's `dedicated_server_mods_setup.lua`.
-For what the project *is* and the on-disk cluster formats it manages, start with `CLAUDE.md` at the repo root.
+For what the project *is* and the workflow it automates, start with the [README](../README.md);
+for how to contribute, see the [contributing guide](../CONTRIBUTING.md).
+The on-disk formats of the cluster files the tool reads and writes are specified in [cluster-formats.md](cluster-formats.md).
 
 ## Development checks
 

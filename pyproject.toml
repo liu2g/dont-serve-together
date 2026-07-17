@@ -3,6 +3,11 @@ name = "dont-serve-together"
 version = "0.1.0"
 description = "GUI manager for Don't Starve Together dedicated-server clusters, mods, and settings."
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    { name = "Zuguang Liu", email = "leo85811nardo@protonmail.com" },
+]
 requires-python = ">=3.14"
 dependencies = [
     "pydantic>=2.13.4",
@@ -10,6 +15,12 @@ dependencies = [
     "textual-diff-view>=0.1.5",
     "textual-fspicker>=1.0.1",
 ]
+
+[project.urls]
+Homepage = "https://github.com/liu2g/dont-serve-together"
+Repository = "https://github.com/liu2g/dont-serve-together"
+Issues = "https://github.com/liu2g/dont-serve-together/issues"
+Releases = "https://github.com/liu2g/dont-serve-together/releases"
 
 [project.scripts]
 dont-serve-together = "dont_serve_together.__main__:main"
