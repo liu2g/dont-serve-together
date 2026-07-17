@@ -14,9 +14,7 @@ from dont_serve_together.cluster.luadata import (
 
 EXAMPLES = Path(__file__).parent / "cluster_examples"
 
-SAMPLE_LUA_FILES = sorted(EXAMPLES.glob("*/*/leveldataoverride.lua")) + sorted(
-    EXAMPLES.glob("*/*/modoverrides.lua")
-)
+SAMPLE_LUA_FILES = sorted(EXAMPLES.glob("*/*/leveldataoverride.lua")) + sorted(EXAMPLES.glob("*/*/modoverrides.lua"))
 
 
 def read_exact(path: Path) -> str:

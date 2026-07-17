@@ -223,10 +223,32 @@ class _Parser:
         return LuaParseError(message, line, column)
 
 
-_LUA_KEYWORDS = frozenset({
-    "and", "break", "do", "else", "elseif", "end", "false", "for", "function", "goto", "if",
-    "in", "local", "nil", "not", "or", "repeat", "return", "then", "true", "until", "while",
-})
+_LUA_KEYWORDS = frozenset(
+    {
+        "and",
+        "break",
+        "do",
+        "else",
+        "elseif",
+        "end",
+        "false",
+        "for",
+        "function",
+        "goto",
+        "if",
+        "in",
+        "local",
+        "nil",
+        "not",
+        "or",
+        "repeat",
+        "return",
+        "then",
+        "true",
+        "until",
+        "while",
+    }
+)
 
 _SERIALIZE_ESCAPES = {"\\": "\\\\", '"': '\\"', "\n": "\\n", "\r": "\\r", "\t": "\\t"}
 

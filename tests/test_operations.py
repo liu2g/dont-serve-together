@@ -60,9 +60,7 @@ def test_mod_merge_reproduces_cluster_islandstart():
     island_text = read_exact(EXAMPLES / "Cluster_IslandStart" / "Island" / "modoverrides.lua")
     island_fields = parse_lua_table(island_text).fields
     ia_only = LuaTable(fields={key: island_fields[key] for key in IA_MOD_KEYS})
-    merged = prepare_mod_merge(
-        serialize_lua_table(ia_only), EXAMPLES / "Cluster_2" / "Master" / "modoverrides.lua"
-    )
+    merged = prepare_mod_merge(serialize_lua_table(ia_only), EXAMPLES / "Cluster_2" / "Master" / "modoverrides.lua")
     assert merged == island_text
 
 

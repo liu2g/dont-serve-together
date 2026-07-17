@@ -153,9 +153,7 @@ class ClusterViewScreen(Screen[str | None]):
             case "level":
                 self.app.push_screen(ShardSelectScreen(self._cluster), callback=self._shard_chosen)
             case "mods":
-                self.app.push_screen(
-                    FileDiffScreen(self._cluster, DiffMode.APPEND_MODS), callback=self._diff_closed
-                )
+                self.app.push_screen(FileDiffScreen(self._cluster, DiffMode.APPEND_MODS), callback=self._diff_closed)
             case "populate":
                 self._populate_mods()
             case "reload":

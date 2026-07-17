@@ -1,12 +1,9 @@
+#!/usr/bin/env -S uv run
+
 """Convert a PNG logo into a multi-resolution Windows ``.ico`` file.
 
 The resulting icon embeds every size PyInstaller and Windows Explorer expect,
-so it can be handed to PyInstaller's ``icon=`` option for the executable.
-
-Usage::
-
-    uv run python scripts/png_to_ico.py                 # assets/logo.png -> assets/logo.ico
-    uv run python scripts/png_to_ico.py src.png out.ico  # explicit paths
+so it can be handed to PyInstaller's ``--icon`` option for the executable.
 """
 
 from __future__ import annotations

@@ -28,6 +28,7 @@ ASCII_ART = r"""
 """
 # Generated with https://patorjk.com/software/taag using the "Script" font
 
+
 def _app_version() -> str:
     try:
         return version("dont-serve-together")

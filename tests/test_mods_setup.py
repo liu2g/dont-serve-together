@@ -125,7 +125,7 @@ def test_append_to_stock_copy(tmp_path: Path):
     data = target.read_bytes()
     assert data.startswith(original)  # a true append: existing bytes untouched
     expected_block = "\r\n" + "\r\n".join(f'ServerModSetup("{mod_id}")' for mod_id in missing)
-    assert data[len(original):] == expected_block.encode("ascii")
+    assert data[len(original) :] == expected_block.encode("ascii")
     assert not data.endswith(b"\n")  # the stock convention: no trailing newline
 
     after = check_mods_setup(island, target)

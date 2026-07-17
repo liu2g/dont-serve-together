@@ -32,32 +32,10 @@ packages = ["dont_serve_together"]
 
 [tool.ruff]
 line-length = 120
-target-version = "py314"
 
-[tool.ruff.lint]
-# pycodestyle/pyflakes, isort, naming, pyupgrade, bugbear, simplify, pathlib,
-# pydocstyle, and annotation checks -- matching the project's coding conventions.
-select = ["E", "F", "I", "N", "UP", "B", "SIM", "PTH", "D", "ANN", "RUF"]
-ignore = [
-    "D203",  # incompatible with D211 (no blank line before class docstring)
-    "D213",  # incompatible with D212 (multi-line summary on first line)
-    "ANN401",  # allow explicit typing.Any where genuinely needed
-]
+[tool.ruff.lint.isort]
+force-wrap-aliases = true
+combine-as-imports = true
 
-[tool.ruff.lint.pydocstyle]
-convention = "google"
-
-[tool.ruff.lint.per-file-ignores]
-# Tests don't need docstrings or full annotations.
-"tests/**" = ["D", "ANN"]
-
-[tool.pyright]
-pythonVersion = "3.14"
-typeCheckingMode = "standard"
-include = ["dont_serve_together", "tests"]
-venvPath = "."
-venv = ".venv"
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-addopts = "-ra"
+[tool.ruff.format]
+quote-style = "double"

@@ -30,8 +30,6 @@ htmlcov/
 .DS_Store
 Thumbs.db
 
-# Local, machine-specific Claude Code settings
+# Claude Code
+CLAUDE.md
 .claude/settings.local.json
-
-# Real DST cluster data if copied into the repo for manual testing
-/sample_clusters/

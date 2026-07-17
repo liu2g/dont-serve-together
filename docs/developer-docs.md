@@ -3,6 +3,20 @@
 This document explains how the program works to a developer new to the codebase: the UI flow, the behaviors behind each screen, and the handling of the game's `dedicated_server_mods_setup.lua`.
 For what the project *is* and the on-disk cluster formats it manages, start with `CLAUDE.md` at the repo root.
 
+## Development checks
+
+`scripts/check.sh` is a convenience wrapper around the format, lint, and test commands.
+Run it before committing:
+
+```bash
+./scripts/check.sh            # run everything: format, lint, and tests
+./scripts/check.sh --format   # ruff format and import sorting only
+./scripts/check.sh --lint     # ruff check and pyright only
+./scripts/check.sh --test     # pytest only
+```
+
+With no flags it runs all three stages; the flags select individual stages, and `--all` is the explicit form of the default.
+
 ## Code map
 
 The UI is built with the Textual library.

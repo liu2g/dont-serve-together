@@ -91,9 +91,7 @@ def _check_mod_overrides_identical(shards: list[Shard]) -> None:
     whole cluster; this is the only byte-level comparison in the tool.
     """
     reference = shards[0]
-    differing = [
-        shard.name for shard in shards[1:] if shard.mod_overrides.raw_text != reference.mod_overrides.raw_text
-    ]
+    differing = [shard.name for shard in shards[1:] if shard.mod_overrides.raw_text != reference.mod_overrides.raw_text]
     if differing:
         raise ClusterLoadError(
             f"{_MOD_OVERRIDES} is not byte-identical across shards ({reference.name} vs {', '.join(differing)})"
@@ -129,9 +127,7 @@ def _load_shard(path: Path) -> Shard:
         entries=[_build_mod_entry(entry, mod_overrides_path) for entry in top_level_entries],
     )
 
-    return Shard(
-        name=path.name, path=path, server_ini=server_ini, level_data=level_data, mod_overrides=mod_overrides
-    )
+    return Shard(name=path.name, path=path, server_ini=server_ini, level_data=level_data, mod_overrides=mod_overrides)
 
 
 def _build_mod_entry(entry: TopLevelEntry, file: Path) -> ModEntry:
@@ -143,9 +139,7 @@ def _build_mod_entry(entry: TopLevelEntry, file: Path) -> ModEntry:
     return ModEntry(
         key=entry.key,
         enabled=entry.value.fields.get("enabled") is True,
-        configuration_options=(
-            configuration_options if isinstance(configuration_options, LuaTable) else LuaTable()
-        ),
+        configuration_options=(configuration_options if isinstance(configuration_options, LuaTable) else LuaTable()),
         source_text=entry.source_text,
     )
 
