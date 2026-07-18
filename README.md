@@ -7,6 +7,10 @@ It opens a server cluster folder and takes over the fiddly parts of setting one 
 carrying world settings from one cluster to another, combining mod lists, and keeping the server's mod-download list in sync.
 Every change is shown as a side-by-side preview before anything is written, so you never have to hand-edit a config file.
 
+> [!NOTE]
+> This project is not made to be the replacement/alterantive to the [Vox Launcher](https://github.com/diogo-webber/vox-launcher).
+> Despite the name, the project serves a different purpose as of today's scope, and it is not a launcher.
+
 ## What it does
 
 Point the tool at a cluster folder and it shows what is inside:
@@ -27,16 +31,43 @@ From there, the menu offers three actions:
 
 The first two actions show a before/after comparison of the affected file, and nothing is written until you press "Apply Changes".
 
-## Download
+## Installation
 
-Download `dont-serve-together.exe` from the [releases page](https://github.com/liu2g/dont-serve-together/releases).
+### Windows Prebuilt
+
+Prebuilt executable `dont-serve-together.exe` is available to download from the [releases page](https://github.com/liu2g/dont-serve-together/releases).
 There is nothing to install: save it anywhere and run it.
 
-Windows may warn that the app is unrecognized the first time you run it.
-If you downloaded it from the releases page above, choose "More info" and then "Run anyway".
+<details>
 
-The prebuilt download is Windows-only for now.
-On macOS and Linux the tool runs from source; see the [developer documentation](docs/developer-docs.md).
+<summary>Windows may warn that the app is unrecognized the first time you run it.</summary>
+
+This project is 100% open-source.
+Everything is archived in this repository, even including the exe building process.
+
+If you downloaded it from the releases page above, it is safe to run, so you can choose "More info" and then "Run anyway".
+
+If you are still not sure, you can build the exe yourself from source; see the section below for instructions.
+
+</details>
+
+### Building From Source (Compatible to Windows, macOS, and Linux)
+
+This project is a Python app implemented with modern toolchain and cross-platform compatibility in mind.
+As a result, it can be installed using any pip-compatible tools.
+Here we provide examples using [UV](https://docs.astral.sh/uv/getting-started/installation/) and [pipx](https://pipx.pypa.io/stable/how-to/install-pipx.html).
+
+To install using UV, run the following command in a terminal:
+
+```
+uv tool install git+https://github.com/liu2g/dont-serve-together
+```
+
+To install using pipx, run the following command in a terminal:
+
+```
+pipx install git+https://github.com/liu2g/dont-serve-together
+```
 
 ## Getting started
 
