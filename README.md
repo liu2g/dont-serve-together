@@ -71,6 +71,12 @@ pipx install git+https://github.com/liu2g/dont-serve-together
 
 ## Getting started
 
+> [!NOTE]
+> Make sure to ALWAYS keep a back up of your cluster before modifying it, as a good data safety practice in general.
+>
+> This project has not matured to the point of stable releases, so expect changes and issues when you use.
+> If you encountered any issues, you are very welcome to report to the [Issues](https://github.com/liu2g/dont-serve-together/issues) section.
+
 Here is the scenario the tool was built around, as a worked example.
 
 The game's own server-creation screen can only make a two-shard cluster: `Master` (the overworld) and `Caves`.
