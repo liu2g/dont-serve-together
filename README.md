@@ -31,6 +31,10 @@ From there, the menu offers three actions:
 
 The first two actions show a before/after comparison of the affected file, and nothing is written until you press "Apply Changes".
 
+| Cluster View | Diff View |
+|:---:|:---:|
+| ![](assets/screenshot_cluster-view.png) | ![](assets/screenshot_diff-view-1.png) |
+
 ## Installation
 
 ### Windows Prebuilt
