@@ -69,6 +69,11 @@ To install using pipx, run the following command in a terminal:
 pipx install git+https://github.com/liu2g/dont-serve-together
 ```
 
+Then the program is available in the terminal by typing:
+```
+dont-serve-together
+```
+
 ## Getting started
 
 > [!NOTE]
@@ -94,7 +99,7 @@ The assembly:
 
 1. Copy the template's folder into the game's cluster folder (`Documents\Klei\DoNotStarveTogether`) with the file explorer, under whatever name you like.
    This part you do by hand; everything after it happens in the tool.
-2. Run `dont-serve-together.exe`.
+2. Run dont-serve-together program.
    A text-style interface opens in a terminal window; both mouse and keyboard work.
 3. Press "Browse cluster folder" and pick the copy you just made.
    The picker already starts in the game's cluster folder.
